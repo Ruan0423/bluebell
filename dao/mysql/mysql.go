@@ -2,22 +2,23 @@ package mysql
 
 import (
 	"fmt"
+	"web_framework/settings"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/spf13/viper"
 	"github.com/jinzhu/gorm"
+
 )
 var Db *gorm.DB
 
-func Init() (err error) {
+func Init(cfg *settings.Mysqlconfig) (err error) {
 
 
-	dsn :=fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-	viper.GetString("mysql.username"),
-	viper.GetString("mysql.password"),
-	viper.GetString("mysql.host"),
-	viper.GetString("mysql.port"),
-	viper.GetString("mysql.database"),
+	dsn :=fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	cfg.Username,
+	cfg.Password,
+	cfg.Host,
+	cfg.Port,
+	cfg.Database,
 )
 	fmt.Println(dsn)
 	Db,err = gorm.Open("mysql",dsn)

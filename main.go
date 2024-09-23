@@ -25,21 +25,21 @@ func main() {
 		return
 	}
 	//2.初始化日志
-	if err :=logger.Init() ; err!=nil{
+	if err :=logger.Init(settings.Conf.Logconfig) ; err!=nil{
 		fmt.Println("error: ", err)
 		return
 	}
 	zap.L().Debug("logger init success!")
 	defer zap.L().Sync()
 	//3. 初始化Mysql
-	if err :=mysql.Init() ; err!=nil{
+	if err :=mysql.Init(settings.Conf.Mysqlconfig) ; err!=nil{
 		fmt.Println("error: ", err)
 		return
 	}
 	defer mysql.Db.Close()
 	
 	//4. Redis初始化
-	// if err :=redis.Init() ; err!=nil{
+	// if err :=redis.Init(settings.Conf.Redisconfig) ; err!=nil{
 	// 	fmt.Println("error: ", err)
 	// 	return
 	// }

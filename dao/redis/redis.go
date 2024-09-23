@@ -2,14 +2,15 @@ package redis
 
 import (
 	"fmt"
+	"web_framework/settings"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/spf13/viper"
+
 )
 
 var Rdb *redis.Client
-func Init()(err error){
-	adrr := fmt.Sprint("%s:%s",viper.GetString("redis.host"),viper.GetString("redis.port"))
+func Init(cfg *settings.Redisconfig)(err error){
+	adrr := fmt.Sprint("%s:%d",cfg.Host,cfg.Port)
 	Rdb = redis.NewClient(&redis.Options{
 		Addr:     adrr, // Redis 服务器地址
 		Password: "",               // 如果有密码的话

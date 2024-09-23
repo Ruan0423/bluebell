@@ -2,6 +2,7 @@ package router
 
 import (
 	"web_framework/logger"
+	"web_framework/settings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +13,7 @@ func SetUprouter() *gin.Engine {
 	
 	r.GET("/",func(ctx *gin.Context) {
 		ctx.JSON(200,gin.H{
-			"msg":"test OK!!!!",
+			"msg":settings.Conf.APP.Port,
 		})
 	})
 	return r

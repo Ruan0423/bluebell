@@ -9,10 +9,10 @@ import (
 	"runtime/debug"
 	"strings"
 	"time"
+	"web_framework/settings"
 
 	"github.com/gin-gonic/gin"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-	"github.com/spf13/viper"
 
 	// "gopkg.in/natefinch/lumberjack.v2"
 	"go.uber.org/zap"
@@ -20,12 +20,12 @@ import (
 )
 
 //使用自定义的zap logger
-func Init() (err error){
+func Init(cfg *settings.Logconfig) (err error){
 	
 	//编码器
 	encoder := getEncoder()
 	//输出位置
-	writeSyncer:= getwriteSyncer(viper.GetString("log.filename"))
+	writeSyncer:= getwriteSyncer(cfg.Filename)
 
 	//定义core
 	core1 := zapcore.NewCore(
