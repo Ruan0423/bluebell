@@ -43,6 +43,8 @@ type Mysqlconfig struct {
 	Table string `mapstructure:"table"`
 	Field string `mapstructure:"field"`
 	TimeField string `mapstructure:"time_field"`
+	MaxOpenConns int `mapstructure:"max_open_conns"`
+	MaxIdleConns int `mapstructure:"max_idle_conns"`
 }
 
 type Redisconfig struct {

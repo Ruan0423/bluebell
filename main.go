@@ -36,7 +36,7 @@ func main() {
 		fmt.Println("error: ", err)
 		return
 	}
-	defer mysql.Db.Close()
+	defer mysql.Close()
 	
 	//4. Redis初始化
 	// if err :=redis.Init(settings.Conf.Redisconfig) ; err!=nil{
