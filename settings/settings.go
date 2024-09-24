@@ -28,6 +28,9 @@ type APP struct {
 type Logconfig struct {
     Filename string `mapstructure:"filename"`
     Level string `mapstructure:"level"`
+	MaxSize int `mapstructure:"maxsize"`
+	MaxBackups int `mapstructure:"maxbackups"`
+	MaxAge int `mapstructure:"maxage"`
 }
 
 type Mysqlconfig struct {

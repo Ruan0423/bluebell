@@ -19,5 +19,8 @@ redis:
 
 log:
   level: "Debug"
-  filename: "log_all"
+  filename: "log_all.log"
+  max_size: 100
+  max_backups: 3
+  max_age: 24
 
