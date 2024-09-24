@@ -1,6 +1,7 @@
 package router
 
 import (
+	"web_framework/controlle"
 	"web_framework/logger"
 	"web_framework/settings"
 
@@ -16,5 +17,6 @@ func SetUprouter() *gin.Engine {
 			"msg":settings.Conf.APP.Port,
 		})
 	})
+	r.POST("/register", controlle.RegisterHandler)
 	return r
 }
