@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -12,94 +11,76 @@ import (
 	"web_framework/settings"
 
 	"github.com/gin-gonic/gin"
-	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
-
-	// "gopkg.in/natefinch/lumberjack.v2"
+	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-//使用自定义的zap logger
-func Init(cfg *settings.Logconfig) (err error){
-	
-	//编码器
+// Init 初始化Logger
+func Init(cfg *settings.Logconfig) (err error) {
+
 	encoder := getEncoder()
-	//输出位置
-	writeSyncer:= getwriteSyncer(cfg.Filename)
 
-	//定义core
-	core1 := zapcore.NewCore(
-		encoder,
-		writeSyncer,
-		zapcore.DebugLevel,//全记录
-	)
-	//错误日志
-	core2 :=  zapcore.NewCore(
-		encoder,
-		getwriteSyncer("log.err"),
-		zapcore.ErrorLevel,
-	)
+	// //1.把日志只记录到一个文件里面，日志level来源于config配置文件。
+	// var l = new(zapcore.Level)
+	// err = l.UnmarshalText([]byte(cfg.Level))
+	// if err != nil {
+	// 	return
+	// }
+	// writeSyncer := getLogWriter(
+	// 	cfg.Filename,
+	// 	cfg.MaxSize,
+	// 	cfg.MaxBackups,
+	// 	cfg.MaxAge,
+	// )
+	// core1 := zapcore.NewCore(encoder, writeSyncer, l)
+	// lg := zap.New(core1, zap.AddCaller())   
+	// // 替换zap包中全局的logger实例，后续在其他包中只需使用zap.L()调用即可
+	// zap.ReplaceGlobals(lg)
 
-	//创建单个logger
-	// logger:= zap.New(core1,zap.AddCaller(), zap.AddCallerSkip(1)) //AddCaller详细记录调用的代码行，AddCallerSkip(1)调用链很多时直接跳过
-	// return logger.Sugar()
 
-	//创建双日志，全日志和错误日志
-	c:=zapcore.NewTee(core1,core2)
-	logger:= zap.New(c,zap.AddCaller())
-	//替换zap的全局logger
-	zap.ReplaceGlobals(logger)
+	//2.分等级创建日志，比如info 类和 error类的日志分别存在log_info.log 和log_err.log中
+	core_debug := zapcore.NewCore(encoder, getLogWriter("log_debug.log",100,3,24),zap.DebugLevel)
+	core_info := zapcore.NewCore(encoder,getLogWriter("log_info.log",100,3,24),zap.InfoLevel)
+	core_err := zapcore.NewCore(encoder, getLogWriter("log_err.log",100,3,24), zap.ErrorLevel)
+	core := zapcore.NewTee(core_debug,core_info,core_err)
+	log_ingo_err := zap.New(core, zap.AddCaller())
+	zap.ReplaceGlobals(log_ingo_err)
+	
+
 	return
 }
 
-//设置日志编译器，什么类型的日志
-func getEncoder() zapcore.Encoder{
-	//encoder配置
+func getEncoder() zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
-	//设置时间格式为2024-9-1-12.32
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig.TimeKey = "time"
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
-	//json格式
-	// jsonencoder := zapcore.NewJSONEncoder(encoderConfig)
-
-	//终端形式
-	ConsoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
-	return ConsoleEncoder
-
+	encoderConfig.EncodeDuration = zapcore.SecondsDurationEncoder
+	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+	return zapcore.NewConsoleEncoder(encoderConfig)
 }
 
-//设置输出位置
-func getwriteSyncer(logfilename string) zapcore.WriteSyncer {
-	//日志文件
-	// logfile, _ :=os.OpenFile(logfilename,os.O_APPEND | os.O_CREATE|os.O_RDWR,0666)
-
-	//分割日志
-	
-	l, _ := rotatelogs.New(
-		logfilename+".%Y%m%d%H%M.log",
-		rotatelogs.WithMaxAge(30*24*time.Hour),    // 最长保存30天
-		rotatelogs.WithRotationTime(time.Hour*24), // 24小时切割一次
-	)
-
-	//也输出到终端
-	wc := io.MultiWriter(l,os.Stdout)
-	return zapcore.AddSync(wc)
+func getLogWriter(filename string, maxSize, maxBackup, maxAge int) zapcore.WriteSyncer {
+	lumberJackLogger := &lumberjack.Logger{
+		Filename:   filename,
+		MaxSize:    maxSize,
+		MaxBackups: maxBackup,
+		MaxAge:     maxAge,
+	}
+	return zapcore.AddSync(lumberJackLogger)
 }
 
-
-//Ginlogger
+// GinLogger 接收gin框架默认的日志
 func GinLogger() gin.HandlerFunc {
-
-	return func (c *gin.Context)  {
-
+	return func(c *gin.Context) {
 		start := time.Now()
-		path  := c.Request.URL.Path
+		path := c.Request.URL.Path
 		query := c.Request.URL.RawQuery
-
 		c.Next()
-		cost :=time.Since(start)
-		zap.L().Info(
-			path,
+
+		cost := time.Since(start)
+		zap.L().Info(path,
 			zap.Int("status", c.Writer.Status()),
 			zap.String("method", c.Request.Method),
 			zap.String("path", path),
@@ -107,55 +88,54 @@ func GinLogger() gin.HandlerFunc {
 			zap.String("ip", c.ClientIP()),
 			zap.String("user-agent", c.Request.UserAgent()),
 			zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
-			zap.Duration("cost", cost), // 运行时间
+			zap.Duration("cost", cost),
 		)
-		
 	}
-
 }
-// GinRecovery
+
+// GinRecovery recover掉项目可能出现的panic，并使用zap记录相关日志
 func GinRecovery(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-	 defer func() {
-	  if err := recover(); err != nil {
-	   // Check for a broken connection, as it is not really a
-	   // condition that warrants a panic stack trace.
-	   var brokenPipe bool
-	   if ne, ok := err.(*net.OpError); ok {
-		if se, ok := ne.Err.(*os.SyscallError); ok {
-		 if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
-		  brokenPipe = true
-		 }
-		}
-	   }
-   
-	   httpRequest, _ := httputil.DumpRequest(c.Request, false)
-	   if brokenPipe {
-		zap.L().Error(c.Request.URL.Path,
-		 zap.Any("error", err),
-		 zap.String("request", string(httpRequest)),
-		)
-		// If the connection is dead, we can't write a status to it.
-		c.Error(err.(error)) // nolint: errcheck
-		c.Abort()
-		return
-	   }
-   
-	   if stack {
-		zap.L().Error("[Recovery from panic]",
-		 zap.Any("error", err),
-		 zap.String("request", string(httpRequest)),
-		 zap.String("stack", string(debug.Stack())),
-		)
-	   } else {
-		zap.L().Error("[Recovery from panic]",
-		 zap.Any("error", err),
-		 zap.String("request", string(httpRequest)),
-		)
-	   }
-	   c.AbortWithStatus(http.StatusInternalServerError)
-	  }
-	 }()
-	 c.Next()
+		defer func() {
+			if err := recover(); err != nil {
+				// Check for a broken connection, as it is not really a
+				// condition that warrants a panic stack trace.
+				var brokenPipe bool
+				if ne, ok := err.(*net.OpError); ok {
+					if se, ok := ne.Err.(*os.SyscallError); ok {
+						if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") {
+							brokenPipe = true
+						}
+					}
+				}
+
+				httpRequest, _ := httputil.DumpRequest(c.Request, false)
+				if brokenPipe {
+					zap.L().Error(c.Request.URL.Path,
+						zap.Any("error", err),
+						zap.String("request", string(httpRequest)),
+					)
+					// If the connection is dead, we can't write a status to it.
+					c.Error(err.(error)) // nolint: errcheck
+					c.Abort()
+					return
+				}
+
+				if stack {
+					zap.L().Error("[Recovery from panic]",
+						zap.Any("error", err),
+						zap.String("request", string(httpRequest)),
+						zap.String("stack", string(debug.Stack())),
+					)
+				} else {
+					zap.L().Error("[Recovery from panic]",
+						zap.Any("error", err),
+						zap.String("request", string(httpRequest)),
+					)
+				}
+				c.AbortWithStatus(http.StatusInternalServerError)
+			}
+		}()
+		c.Next()
 	}
-   }
+}
