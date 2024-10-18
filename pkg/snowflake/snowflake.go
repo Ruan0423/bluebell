@@ -20,5 +20,6 @@ func Init(startTime string, machineID int64) (err error) {
 	return
 }
 func GenID() int64 {
+	Init("2024-05-20", 1)
 	return node.Generate().Int64()
 }

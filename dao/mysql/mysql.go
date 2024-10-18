@@ -26,6 +26,8 @@ func Init(cfg *settings.Mysqlconfig) (err error) {
 	}
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
+	zap.L().Info("数据库连接成功")
+	fmt.Println("数据库连接成功")
 	return
 }
 
