@@ -59,7 +59,6 @@ func Login(user *models.User) bool {
 	}
 
 	if user.Password != Encrypt(oPassword) {
-		zap.L().Error("密码错误")
 		return false
 	}
 	return true

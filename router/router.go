@@ -25,6 +25,7 @@ func SetUprouter() *gin.Engine {
 
 	{
 		v1.GET("/community", controlle.CommunityHandler)
+		v1.GET("/community/:id", controlle.CommunityDetailHandler)
 	}
 
 	return r

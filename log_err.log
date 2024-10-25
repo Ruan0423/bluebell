@@ -45,3 +45,19 @@
 2024-10-21T15:19:35.293+0800	ERROR	mysql/mysql.go:24	connect DB failed 	{"error": "dial tcp 127.0.0.1:3306: connectex: No connection could be made because the target machine actively refused it."}
 2024-10-21T17:30:31.988+0800	ERROR	mysql/community.go:19	get community data failed	{"error": "invalid connection"}
 2024-10-21T17:30:31.989+0800	ERROR	controlle/community.go:16	logic.GetComminityList err:	{"error": "invalid connection"}
+2024-10-25T10:17:01.436+0800	ERROR	mysql/community.go:34	获取查询社区详情失败：	{"error": "Error 1054 (42S22): Unknown column 'comunity_name' in 'field list'"}
+2024-10-25T10:18:41.536+0800	ERROR	mysql/community.go:34	获取查询社区详情失败：	{"error": "id错误"}
+2024-10-25T10:20:38.960+0800	ERROR	mysql/community.go:34	获取查询社区详情失败：	{"error": "id错误"}
+2024-10-25T10:20:38.961+0800	ERROR	controlle/community.go:38	获取社区详细信息失败，：	{"error": "id错误"}
+2024-10-25T10:25:44.974+0800	ERROR	controlle/Login.go:21	登录验证失败：	{"error": "用户或密码错误！"}
+2024-10-25T10:28:13.256+0800	ERROR	logic/user.go:42	用户不存在，	{"username": "admin"}
+2024-10-25T10:28:13.257+0800	ERROR	controlle/Login.go:21	登录验证失败：	{"error": "用户或密码错误！"}
+2024-10-25T10:29:24.842+0800	ERROR	mysql/user.go:62	密码错误
+2024-10-25T10:29:24.843+0800	ERROR	controlle/Login.go:21	登录验证失败：	{"error": "用户或密码错误！"}
+2024-10-25T10:32:31.076+0800	ERROR	mysql/user.go:62	密码错误
+2024-10-25T10:32:31.076+0800	ERROR	logic/user.go:52	密码不正确，	{"username": "test", "password": "te1"}
+2024-10-25T10:34:36.085+0800	ERROR	mysql/user.go:23	用户检测失败	{"error": "invalid connection"}
+2024-10-25T10:40:37.037+0800	ERROR	logic/user.go:42	用户不存在，	{"username": "admin"}
+2024-10-25T11:04:09.342+0800	ERROR	mysql/community.go:34	获取查询社区详情失败：	{"error": "id错误"}
+2024-10-25T11:04:09.342+0800	ERROR	controlle/community.go:38	获取社区详细信息失败，：	{"error": "id错误"}
+2024-10-25T11:34:59.308+0800	ERROR	mysql/user.go:23	用户检测失败	{"error": "invalid connection"}

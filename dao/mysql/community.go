@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"errors"
 	"web_framework/models"
 
 	"go.uber.org/zap"
@@ -20,4 +21,17 @@ func GetComminityList() (data []*models.Community, err error) {
 		return nil, err
 	}
 	return
+}
+
+func GetComminityDetailByID(id int64) (data *models.CommunityDetail, err error) {
+	sqlstr := "select community_id, community_name, introduction, create_time from community where community_id = ?"
+	data = new(models.CommunityDetail)
+
+	if err=db.Get(data,sqlstr,id);err != nil {
+		if err == sql.ErrNoRows {
+			err = errors.New("id错误") 
+		}
+		zap.L().Error("获取查询社区详情失败：",zap.Error(err))
+	}
+	return 
 }
