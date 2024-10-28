@@ -1,6 +1,7 @@
 package logger
 
 import (
+
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -17,7 +18,7 @@ import (
 )
 
 // Init 初始化Logger
-func Init(cfg *settings.Logconfig) (err error) {
+func Init(cfg *settings.APPConfig) (err error) {
 
 	encoder := getEncoder()
 
@@ -40,9 +41,9 @@ func Init(cfg *settings.Logconfig) (err error) {
 
 
 	//2.分等级创建日志，比如info 类和 error类的日志分别存在log_info.log 和log_err.log中
-	core_debug := zapcore.NewCore(encoder, getLogWriter("log_debug.log",100,3,24),zap.DebugLevel)
-	core_info := zapcore.NewCore(encoder,getLogWriter("log_info.log",100,3,24),zap.InfoLevel)
-	core_err := zapcore.NewCore(encoder, getLogWriter("log_err.log",100,3,24), zap.ErrorLevel)
+	core_debug := zapcore.NewCore(encoder, getLogWriter(cfg.Model,"log_debug.log",cfg.MaxSize,cfg.MaxBackups,cfg.MaxAge),zap.DebugLevel)
+	core_info := zapcore.NewCore(encoder,getLogWriter(cfg.Model,"log_info.log",cfg.MaxSize,cfg.MaxBackups,cfg.MaxAge),zap.InfoLevel)
+	core_err := zapcore.NewCore(encoder, getLogWriter(cfg.Model,"log_err.log",cfg.MaxSize,cfg.MaxBackups,cfg.MaxAge), zap.ErrorLevel)
 	core := zapcore.NewTee(core_debug,core_info,core_err)
 	log_ingo_err := zap.New(core, zap.AddCaller())
 	zap.ReplaceGlobals(log_ingo_err)
@@ -61,14 +62,20 @@ func getEncoder() zapcore.Encoder {
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }
 
-func getLogWriter(filename string, maxSize, maxBackup, maxAge int) zapcore.WriteSyncer {
+func getLogWriter(model string,filename string, maxSize, maxBackup, maxAge int) zapcore.WriteSyncer {
 	lumberJackLogger := &lumberjack.Logger{
 		Filename:   filename,
 		MaxSize:    maxSize,
 		MaxBackups: maxBackup,
 		MaxAge:     maxAge,
 	}
-	return zapcore.AddSync(lumberJackLogger)
+	LogWriter :=zapcore.AddSync(lumberJackLogger) //日志记录
+	if model == "dev" {
+		consoleWriter := zapcore.AddSync(os.Stdout) // 打印在控制台
+		return zapcore.NewMultiWriteSyncer(consoleWriter, LogWriter)
+	}
+
+	return LogWriter
 }
 
 // GinLogger 接收gin框架默认的日志

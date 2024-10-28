@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"crypto/md5"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -63,16 +64,19 @@ func Login(user *models.User) bool {
 	}
 	return true
 }
-//删除
 
-func DeleteUser(){
-
-}
-
-//修改
-
-func UpdateUser(){
-
+//GetAthorByUserid 通过用户ID查询用户名
+func GetAthorByUserid(athor_id int64) (name string, err error) {
+	sqlstr := "select username from user where user_id=?"
+	err = db.Get(&name, sqlstr, athor_id)
+	if err!=nil{
+		if err == sql.ErrNoRows{
+			zap.L().Error("查不到用户存在", zap.Any("id:", athor_id))
+			err =nil
+			name = "用户已注销"
+		}
+	}
+	return
 }
 
 func Encrypt(password string) string {
