@@ -19,6 +19,7 @@ func SetUprouter() *gin.Engine {
 	v1.GET("login", func(ctx *gin.Context) {
 		ctx.String(200,"please Login")
 	})
+	//开发接口测试处：
 
 	v1.Use(middleware.JWTAuthMiddleware())
 	
@@ -28,6 +29,9 @@ func SetUprouter() *gin.Engine {
 		v1.GET("/community/:id", controlle.CommunityDetailHandler)
 		v1.POST("/post", controlle.CreatePostHandler)
 		v1.GET("/post/:id", controlle.GetPostHandle)
+		v1.GET("/posts2", controlle.GetPostListHandler)
+	
+
 	}
 
 	return r

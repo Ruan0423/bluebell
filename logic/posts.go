@@ -22,3 +22,13 @@ func GetPostApi(postid int64) (postdata *models.Post, err error) {
 func GetAthorByAthorid(athor_id int64) (athor string, err error) {
 	return mysql.GetAthorByUserid(athor_id)
 }
+
+// 
+func GetPostList(pagenum , pageSize int64) ([]*models.Post, error) {
+
+	//计算偏移量
+	offset := (pagenum-1) * pageSize
+
+	//查询
+	return mysql.GetPostList(offset, pageSize)
+}

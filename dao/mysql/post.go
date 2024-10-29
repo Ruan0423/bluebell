@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"errors"
 	"web_framework/models"
 
 	"go.uber.org/zap"
@@ -34,3 +35,14 @@ func GetPOstByID(postid int64) (postdata *models.Post, err error) {
 	return
 }
 
+func GetPostList(offset , pagesize int64) ([]*models.Post , error){
+	sqlstr := "select post_id,author_id,community_id,title,content,create_time,update_time from post limit ?,?"
+
+	postlist := make([]*models.Post, 0,pagesize)
+	err := db.Select(&postlist, sqlstr, offset,pagesize)
+	if err!=nil {
+		zap.L().Error("获取帖子列表失败GetPostList：", zap.Error(err))
+		err = errors.New("获取帖子列表失败！")
+	}
+	return postlist, err
+}
